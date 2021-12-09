@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Coupling
 {
@@ -6,8 +7,18 @@ namespace Coupling
     {
         static void Main(string[] args)
         {
-            IDataAccess dal = new DataAccess();
-            IBusiness biz = new Business(dal);
+            var collection = new ServiceCollection();
+            collection.AddScoped<IDataAccess, DataAccess>();
+            collection.AddScoped<IBusiness, BusinessV2>();
+
+            var provider = collection.BuildServiceProvider();
+
+            //IDataAccess dal = new DataAccess();
+            IDataAccess dal = provider.GetService<IDataAccess>();
+
+            //IBusiness biz = new Business(dal);
+            IBusiness biz = provider.GetService<IBusiness>();
+
             var userInterface = new UserInterface(biz);
 
         }
@@ -62,6 +73,12 @@ namespace Coupling
 
     public class BusinessV2: IBusiness
     {
+        private readonly IDataAccess _dataAccess;
+        public BusinessV2(IDataAccess dataAccess)
+        {
+            _dataAccess = dataAccess;
+        }
+
         public void SignUp(string userName, string password)
         {
             //validation
